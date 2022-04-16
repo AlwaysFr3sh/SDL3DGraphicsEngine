@@ -1,6 +1,13 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
+// Swap two integers
+void swap(int *a, int *b) {
+  int temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
 // Converts X coordinate from system where 0 is at the center of the screen to the native system where 0 is the top left corner
 int ConvertXCoordinate(int x) {
   return 500 + x;
@@ -28,10 +35,17 @@ void FillScreen(SDL_Renderer* renderer, int color[]) {
 }
 
 // Draws Line TODO: Implement
-void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1) {
-
-  return;
-
+void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[]) {
+  if (x0 > x1) {
+    swap(&x0, &x1);
+    printf("here!");
+  }
+  float a = (float)(y1 - y0) / (float)(x1 - x0);
+  float y = y0;
+  for (int x=x0; x<x1; ++x) {
+    DrawPoint(renderer, x, y, color); 
+    y = y + a;
+  }
 }
 
 // Main program loop TODO: add loop
@@ -48,9 +62,9 @@ void ProgramLoop(SDL_Renderer* renderer) {
       }
     }
     FillScreen(renderer, black);
-    DrawPoint(renderer, 100, 100, white); 
-    DrawPoint(renderer, 100, 200, white);
-    DrawPoint(renderer, 1, 1, red);
+    DrawLine(renderer, -200, -100, 240, 120, white);
+    DrawPoint(renderer, 240, 120, red);
+    DrawPoint(renderer, -200, -100, red);
     SDL_RenderPresent(renderer);
   }
 }
