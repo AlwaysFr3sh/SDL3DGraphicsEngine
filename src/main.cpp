@@ -74,6 +74,7 @@ void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[
 }
 
 // Draw wireframe triangle (untested lol)
+// TODO: figure out why this causes a segmentation fault
 void DrawTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
   DrawLine(renderer, x0, y0, x1, y1, color);
   DrawLine(renderer, x1, y1, x2, y2, color);
@@ -81,6 +82,7 @@ void DrawTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
 }
 
 // Draw solid color triangle
+// TODO: figure out why this function hangs the program
 void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
   // Implement here! 
   if (y1 < y0) { Swap(&x0, &x1); Swap(&y0, &y1); }
@@ -130,7 +132,8 @@ void ProgramLoop(SDL_Renderer* renderer) {
     //DrawLine(renderer, -200, -100, 240, 120, white);
     //DrawLine(renderer, -100, 0, 100, 0, white);
     //DrawLine(renderer, 0, -100, 0, -200, red);
-    FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
+    //FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
+    DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, white);
     SDL_RenderPresent(renderer);
   }
 }
