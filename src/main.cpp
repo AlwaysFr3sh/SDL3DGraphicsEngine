@@ -83,6 +83,34 @@ void DrawTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
 // Draw solid color triangle
 void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
   // Implement here! 
+  if (y1 < y0) { Swap(&x0, &x1); Swap(&y0, &y1); }
+  if (y2 < y0) { Swap(&x0, &x2); Swap(&y0, &y2); }
+  if (y2 < y1) { Swap(&x1, &x2); Swap(&y1, &y2); }
+
+  std::vector<float> x01 = Interpolate(y0, x0, y1, x1);
+  std::vector<float> x12 = Interpolate(y1, x1, y2, x2);
+  std::vector<float> x02 = Interpolate(y0, x0, y2, x2);
+
+  x01.pop_back();
+  std::vector<float> x012 = x01;
+  x012.insert(x012.end(), x12.begin(), x12.end());
+
+  std::vector<float> x_left;
+  std::vector<float> x_right;
+  int m = floor(x012.size() / 2);
+  if (x02[m] < x012[m]) {
+    x_left = x02;
+    x_right = x012;
+  } else {
+    x_left = x012;
+    x_right = x02;
+  }
+
+  for (int y=y0; y<y2; y++) {
+    for (int x=x_left[y - y0]; x<x_right[y - y0]; x++) {
+      DrawPoint(renderer, x, y, color);
+    }
+  }
 }
 
 // Main program loop TODO: do framerate stuff 
@@ -99,9 +127,10 @@ void ProgramLoop(SDL_Renderer* renderer) {
       }
     }
     FillScreen(renderer, black);
-    DrawLine(renderer, -200, -100, 240, 120, white);
-    DrawLine(renderer, -100, 0, 100, 0, white);
-    DrawLine(renderer, 0, -100, 0, -200, red);
+    //DrawLine(renderer, -200, -100, 240, 120, white);
+    //DrawLine(renderer, -100, 0, 100, 0, white);
+    //DrawLine(renderer, 0, -100, 0, -200, red);
+    FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
     SDL_RenderPresent(renderer);
   }
 }
