@@ -1,8 +1,9 @@
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <vector>
 
 // Swap two integers
-void swap(int *a, int *b) {
+void Swap(int *a, int *b) {
   int temp = *a;
   *a = *b;
   *b = temp;
@@ -34,17 +35,40 @@ void FillScreen(SDL_Renderer* renderer, int color[]) {
   SDL_RenderClear(renderer);
 }
 
-// Draws Line TODO: Implement
-void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[]) {
-  if (x0 > x1) {
-    swap(&x0, &x1);
-    printf("here!");
+std::vector<float> Interpolate(int i0, int d0, int i1, int d1) {
+  if (i0 == i1) {
+    return (std::vector<float>){(float)d0};
   }
-  float a = (float)(y1 - y0) / (float)(x1 - x0);
-  float y = y0;
-  for (int x=x0; x<x1; ++x) {
-    DrawPoint(renderer, x, y, color); 
-    y = y + a;
+
+  std::vector<float> values;
+  float a = (float)(d1 - d0) / (float)(i1 - i0);
+  float d = (float)d0;
+  for (int i=i0; i<i1; ++i) {
+    values.push_back(d);
+    d = d + a;
+  }
+  return values;
+}
+
+void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[]) {
+  if (abs(x1 - x0) > abs(y1 - y0)) {
+    if (x0 > x1) {
+      Swap(&x0, &x1);
+      Swap(&y0, &y1);
+    }
+    std::vector<float> ys = Interpolate(x0, y0, x1, y1);
+    for (int x=x0; x<x1; ++x) {
+      DrawPoint(renderer, x, ys[x - x0], color);
+    }
+  } else {
+    if (y0 > y1) {
+      Swap(&x0, &x1);
+      Swap(&y0, &y1);
+    }
+    std::vector<float> xs = Interpolate(x0, y0, x1, y1);
+    for (int y=y0; y<y1; ++y) {
+      DrawPoint(renderer, xs[y - y0], y, color);
+    }
   }
 }
 
@@ -63,8 +87,8 @@ void ProgramLoop(SDL_Renderer* renderer) {
     }
     FillScreen(renderer, black);
     DrawLine(renderer, -200, -100, 240, 120, white);
-    DrawPoint(renderer, 240, 120, red);
-    DrawPoint(renderer, -200, -100, red);
+    DrawLine(renderer, -100, 0, 100, 0, white);
+    DrawLine(renderer, 0, -100, 0, -200, red);
     SDL_RenderPresent(renderer);
   }
 }
