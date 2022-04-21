@@ -35,11 +35,11 @@ void FillScreen(SDL_Renderer* renderer, int color[]) {
   SDL_RenderClear(renderer);
 }
 
+// interpolate line between two points
 std::vector<float> Interpolate(int i0, int d0, int i1, int d1) {
   if (i0 == i1) {
     return (std::vector<float>){(float)d0};
   }
-
   std::vector<float> values;
   float a = (float)(d1 - d0) / (float)(i1 - i0);
   float d = (float)d0;
@@ -50,6 +50,7 @@ std::vector<float> Interpolate(int i0, int d0, int i1, int d1) {
   return values;
 }
 
+// Draws Line
 void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[]) {
   if (abs(x1 - x0) > abs(y1 - y0)) {
     if (x0 > x1) {
@@ -72,7 +73,19 @@ void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[
   }
 }
 
-// Main program loop TODO: add loop
+// Draw wireframe triangle (untested lol)
+void DrawTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
+  DrawLine(renderer, x0, y0, x1, y1, color);
+  DrawLine(renderer, x1, y1, x2, y2, color);
+  DrawLine(renderer, x2, y2, x0, y0, color);
+}
+
+// Draw solid color triangle
+void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
+  // Implement here! 
+}
+
+// Main program loop TODO: do framerate stuff 
 void ProgramLoop(SDL_Renderer* renderer) {
   int black[3] = {0, 0, 0};
   int white[3] = {255, 255, 255};
