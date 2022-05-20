@@ -118,7 +118,7 @@ void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
   for (int y=y0; y<y2; ++y) {
 	//for (int y=y0; y<y2; y++) {
     for (int x=x_left[y - y0]; x<x_right[y - y0]; x++) {
-      DrawPoint(renderer, (int)x, (int)y, color);
+      DrawPoint(renderer, x, y, color);
     }
   }
 }
