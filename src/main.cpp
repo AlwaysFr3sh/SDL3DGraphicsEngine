@@ -115,9 +115,10 @@ void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
     x_right = x02;
   }
 
-  for (int y=y0; y<y2; y++) {
+  for (int y=y0; y<y2; ++y) {
+	//for (int y=y0; y<y2; y++) {
     for (int x=x_left[y - y0]; x<x_right[y - y0]; x++) {
-      DrawPoint(renderer, x, y, color);
+      DrawPoint(renderer, (int)x, (int)y, color);
     }
   }
 }
@@ -139,7 +140,7 @@ void ProgramLoop(SDL_Renderer* renderer) {
     //DrawLine(renderer, -200, -100, 240, 120, white);
     //DrawLine(renderer, -100, 0, 100, 0, white);
     //DrawLine(renderer, 0, -100, 0, -200, red);
-    //FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
+    FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
     DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, white);
 
 		// ** DEBUGGING STUFF (very professional!!) 
