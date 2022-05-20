@@ -47,6 +47,8 @@ std::vector<float> Interpolate(int i0, int d0, int i1, int d1) {
     values.push_back(d);
     d = d + a;
   }
+
+	//std::cout << values[0] << std::endl;
   return values;
 }
 
@@ -59,19 +61,24 @@ void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[
     }
     std::vector<float> ys = Interpolate(x0, y0, x1, y1);
     for (int x=x0; x<x1; ++x) {
-      DrawPoint(renderer, x, ys[x - x0], color);
+      DrawPoint(renderer, (int)x, (int)ys[x - x0], color);
     }
   } else {
+		//std::cout << "Line x0: " << x0 << "y0: " << y0 << "x1: " << x1 << "y1: " << y1 << std::endl;
     if (y0 > y1) {
       Swap(&x0, &x1);
       Swap(&y0, &y1);
     }
-    std::vector<float> xs = Interpolate(x0, y0, x1, y1);
+    std::vector<float> xs = Interpolate(y0, x0, y1, x1);
     for (int y=y0; y<y1; ++y) {
-      DrawPoint(renderer, xs[y - y0], y, color);
+      DrawPoint(renderer, (int)xs[y - y0], (int)y, color);
     }
   }
 }
+
+// Cases that break
+// 0 0 -100 100
+// 0 0 100 -200 
 
 // Draw wireframe triangle (untested lol)
 // TODO: figure out why this causes a segmentation fault
@@ -134,6 +141,17 @@ void ProgramLoop(SDL_Renderer* renderer) {
     //DrawLine(renderer, 0, -100, 0, -200, red);
     //FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
     DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, white);
+
+		// ** DEBUGGING STUFF (very professional!!) 
+		// This does cause segmentation fault
+		//DrawLine(renderer, 0, 0, -100, 100, white);
+		//DrawLine(renderer, 0, 0, -200, -100, white);
+		//DrawLine(renderer, 0, 0, 100, -200, white);
+		//DrawLine(renderer, 100, -200, 300, 400, white);
+
+		// This does not cause segmentation fault
+		//DrawLine(renderer, 0, 0, -100, -100, white);
+
     SDL_RenderPresent(renderer);
   }
 }
