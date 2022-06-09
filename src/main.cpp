@@ -85,7 +85,7 @@ void DrawTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
 // Draw solid color triangle
 // TODO: figure out why this function hangs the program
 void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
-  // Implement here! 
+
   if (y1 < y0) { Swap(&x0, &x1); Swap(&y0, &y1); }
   if (y2 < y0) { Swap(&x0, &x2); Swap(&y0, &y2); }
   if (y2 < y1) { Swap(&x1, &x2); Swap(&y1, &y2); }
@@ -109,13 +109,13 @@ void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
     x_right = x02;
   }
 
-  //for (int y=y0; y<y2; ++y) {
 	for (int y=y0; y<y2; y++) {
-    //for (int x=x_left[y - y0]; x<x_right[y - y0]; ++x) {
     for (int x=x_left[y - y0]; x<x_right[y - y0]; x++) {
       DrawPoint(renderer, x, y, color);
     }
   }
+
+  std::cout << "finished" << std::endl;
 }
 
 // Main program loop TODO: do framerate stuff 
@@ -123,6 +123,18 @@ void ProgramLoop(SDL_Renderer* renderer) {
   int black[3] = {0, 0, 0};
   int white[3] = {255, 255, 255};
   int red[3] = {255, 0, 0};
+
+  FillScreen(renderer, black);
+
+  // This triangle, is broken, TODO: fix it maybe. 
+  //DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
+
+  FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
+  FillTriangle(renderer, -300, 300, -100, 300, -200, 200, red);
+  FillTriangle(renderer, -300, -300, -100, -351, -200, -200, red);
+  
+  SDL_RenderPresent(renderer);
+
   while (true) {
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
@@ -131,17 +143,6 @@ void ProgramLoop(SDL_Renderer* renderer) {
         break;
       }
     }
-    FillScreen(renderer, black);
-
-    // This triangle, is broken, TODO: fix it maybe. 
-    //FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
-
-    FillTriangle(renderer, -300, -300, -100, -300, -200, -200, red);
-    //DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, white);
-    
-    DrawPoint(renderer, 100, -200, white);
-
-    SDL_RenderPresent(renderer);
   }
 }
 
