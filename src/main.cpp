@@ -36,19 +36,18 @@ void FillScreen(SDL_Renderer* renderer, int color[]) {
 }
 
 // interpolate line between two points
-std::vector<float> Interpolate(int i0, int d0, int i1, int d1) {
+std::vector<int> Interpolate(int i0, int d0, int i1, int d1) {
   if (i0 == i1) {
-    return (std::vector<float>){(float)d0};
+    return (std::vector<int>){d0};
   }
-  std::vector<float> values;
+  std::vector<int> values;
   float a = (float)(d1 - d0) / (float)(i1 - i0);
   float d = (float)d0;
   for (int i=i0; i<i1; ++i) {
-    values.push_back(d);
+    values.push_back((int)d);
     d = d + a;
   }
 
-	//std::cout << values[0] << std::endl;
   return values;
 }
 
@@ -59,7 +58,7 @@ void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[
       Swap(&x0, &x1);
       Swap(&y0, &y1);
     }
-    std::vector<float> ys = Interpolate(x0, y0, x1, y1);
+    std::vector<int> ys = Interpolate(x0, y0, x1, y1);
     for (int x=x0; x<x1; ++x) {
       DrawPoint(renderer, (int)x, (int)ys[x - x0], color);
     }
@@ -69,19 +68,14 @@ void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[
       Swap(&x0, &x1);
       Swap(&y0, &y1);
     }
-    std::vector<float> xs = Interpolate(y0, x0, y1, x1);
+    std::vector<int> xs = Interpolate(y0, x0, y1, x1);
     for (int y=y0; y<y1; ++y) {
       DrawPoint(renderer, (int)xs[y - y0], (int)y, color);
     }
   }
 }
 
-// Cases that break
-// 0 0 -100 100
-// 0 0 100 -200 
-
 // Draw wireframe triangle (untested lol)
-// TODO: figure out why this causes a segmentation fault
 void DrawTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
   DrawLine(renderer, x0, y0, x1, y1, color);
   DrawLine(renderer, x1, y1, x2, y2, color);
@@ -96,16 +90,16 @@ void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
   if (y2 < y0) { Swap(&x0, &x2); Swap(&y0, &y2); }
   if (y2 < y1) { Swap(&x1, &x2); Swap(&y1, &y2); }
 
-  std::vector<float> x01 = Interpolate(y0, x0, y1, x1);
-  std::vector<float> x12 = Interpolate(y1, x1, y2, x2);
-  std::vector<float> x02 = Interpolate(y0, x0, y2, x2);
+  std::vector<int> x01 = Interpolate(y0, x0, y1, x1);
+  std::vector<int> x12 = Interpolate(y1, x1, y2, x2);
+  std::vector<int> x02 = Interpolate(y0, x0, y2, x2);
 
   x01.pop_back();
-  std::vector<float> x012 = x01;
+  std::vector<int>& x012 = x01;
   x012.insert(x012.end(), x12.begin(), x12.end());
 
-  std::vector<float> x_left;
-  std::vector<float> x_right;
+  std::vector<int> x_left;
+  std::vector<int> x_right;
   int m = floor(x012.size() / 2);
   if (x02[m] < x012[m]) {
     x_left = x02;
@@ -115,8 +109,9 @@ void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2
     x_right = x02;
   }
 
-  for (int y=y0; y<y2; ++y) {
-	//for (int y=y0; y<y2; y++) {
+  //for (int y=y0; y<y2; ++y) {
+	for (int y=y0; y<y2; y++) {
+    //for (int x=x_left[y - y0]; x<x_right[y - y0]; ++x) {
     for (int x=x_left[y - y0]; x<x_right[y - y0]; x++) {
       DrawPoint(renderer, x, y, color);
     }
@@ -137,21 +132,14 @@ void ProgramLoop(SDL_Renderer* renderer) {
       }
     }
     FillScreen(renderer, black);
-    //DrawLine(renderer, -200, -100, 240, 120, white);
-    //DrawLine(renderer, -100, 0, 100, 0, white);
-    //DrawLine(renderer, 0, -100, 0, -200, red);
-    FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
-    DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, white);
 
-		// ** DEBUGGING STUFF (very professional!!) 
-		// This does cause segmentation fault
-		//DrawLine(renderer, 0, 0, -100, 100, white);
-		//DrawLine(renderer, 0, 0, -200, -100, white);
-		//DrawLine(renderer, 0, 0, 100, -200, white);
-		//DrawLine(renderer, 100, -200, 300, 400, white);
+    // This triangle, is broken, TODO: fix it maybe. 
+    //FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
 
-		// This does not cause segmentation fault
-		//DrawLine(renderer, 0, 0, -100, -100, white);
+    FillTriangle(renderer, -300, -300, -100, -300, -200, -200, red);
+    //DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, white);
+    
+    DrawPoint(renderer, 100, -200, white);
 
     SDL_RenderPresent(renderer);
   }
