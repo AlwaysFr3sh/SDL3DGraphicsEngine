@@ -4,3 +4,7 @@
 I will write a proper README when I have something that works, for now just know that I am writing this by following along with this: https://gabrielgambetta.com/computer-graphics-from-scratch/
 
 For now also this is just rasterization. I don't think my mac can handle the Raytracing stuff
+
+# BUGS
+
+Filled Triangles don't work, sometimes they cause the program to hang and necessitate a force quit
