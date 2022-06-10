@@ -212,7 +212,13 @@ void ProgramLoop(SDL_Renderer* renderer) {
   //FillTriangle(renderer, -300, 300, -100, 300, -200, 200, red);
   //FillTriangle(renderer, -300, -300, -100, -351, -200, -200, red);
   //DrawShadedTriangle(renderer, 0, 0, 0.0, 100, -200, 0.5, 300, 400, 1.0, red);
+
+  // Debug triangles
   DrawShadedTriangle(renderer, -200, -250, 0.3, 200, 50, 0.1, 20, 250, 1.0, red);
+
+  FillTriangle(renderer, -450, 450, -450, 203, -356, 400, red);
+
+  DrawTriangle(renderer, 300, -400, 400, -400, 350, -300, red);
   
   SDL_RenderPresent(renderer);
 

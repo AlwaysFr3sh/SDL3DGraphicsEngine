@@ -7,4 +7,12 @@ For now also this is just rasterization. I don't think my mac can handle the Ray
 
 # BUGS
 
-Filled Triangles don't work, sometimes they cause the program to hang and necessitate a force quit
+Weird artifacts in FilledTriangles, source is either FillTriangle() function, or the Interpolate() function
+
+Shaded Triangles, straight up don't work proplerly, really weird shit going on, in the example,
+the bottom half of the triangle is shaded perfectly, but the top bit is all wack. 
+
+I am thinking maybe the bug is the result of some weird decimal bug(?), not completely sure, 
+I am fairly confident it's something to do with when we compute the h-values inside the loop, which might
+have something to do with the Interpolate function.
+
