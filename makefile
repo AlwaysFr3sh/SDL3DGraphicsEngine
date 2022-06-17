@@ -1,11 +1,11 @@
 # taken from https://gist.github.com/MarcosX/4751372 
-# No fucking clue how line 16 works, just fucked around and added some 2's, and it worked... sometimes my genius... it's almost frightening!
+# don't ask me how it works lol
 # Directories
 S_DIR=src
 B_DIR=bin
 
 # Files
-S_FILES=$(S_DIR)/main.cpp
+S_FILES=$(S_DIR)/*
 
 # Output
 EXEC=$(B_DIR)/sdl_app
