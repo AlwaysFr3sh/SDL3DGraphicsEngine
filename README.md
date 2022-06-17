@@ -11,7 +11,9 @@ on creating computer graphics from scratch.
 
 For now though we only have triangles :)
 
-[shaded triangle](images/triangle.png)
+<img src="image.png" width="400" height="400">
+
+I will update this image to demonstrate new progress as it comes.
 
 ## Goal
 
@@ -19,14 +21,14 @@ My goal is to render the [Utah Teapot](https://en.wikipedia.org/wiki/Utah_teapot
 Not sure if or when I will get there, have not been working on this project too often. 
 
 # TODO
-[x] Triangle Rasterization (with shading)
-[ ] Matrix multiplication
-[ ] Projection & rotations etc.
-[ ] Port to C (instead of weird c++ c hybrid)
-[ ] Single file or split?
-[ ] Struct or class to abstract SDL so we can swap it out for any drawing library
-[ ] Clipping
-[ ] Draw only visible triangles
-[ ] load Blender files
-[ ] Camera movement?
-[ ] Teapot :)
+- [x] Triangle Rasterization (with shading)
+- [ ] Matrix multiplication
+- [ ] Projection & rotations etc.
+- [ ] Port to C (instead of weird c++ c hybrid)
+- [ ] Single file or split?
+- [ ] Struct or class to abstract SDL so we can swap it out for any drawing library
+- [ ] Clipping
+- [ ] Draw only visible triangles
+- [ ] load Blender files
+- [ ] Camera movement?
+- [ ] Teapot :)
