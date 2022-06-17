@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Create an application window with the following settings:
-  SDL_Window* window = CreateWindowContext((const char*)"cock and balls", 1000, 1000); 
+  SDL_Window* window = CreateWindowContext((const char*)"Graphics", 1000, 1000); 
 
   // Check that the window was successfully created
   if (window == NULL) {
