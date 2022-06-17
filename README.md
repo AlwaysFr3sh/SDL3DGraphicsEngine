@@ -11,7 +11,7 @@ on creating computer graphics from scratch.
 
 For now though we only have triangles :)
 
-<img src="image.png" width="400" height="400">
+<img src="images/triangle.png" width="400" height="400">
 
 I will update this image to demonstrate new progress as it comes.
 
