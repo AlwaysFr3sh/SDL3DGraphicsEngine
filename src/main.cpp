@@ -2,15 +2,14 @@
 #include <SDL2/SDL.h>
 #include <vector>
 
-// Swap two integers
-void Swap(int *a, int *b) {
-  int temp = *a;
-  *a = *b;
-  *b = temp;
-}
+struct point {
+  int x;
+  int y;
+  double h;
+};
 
-void SwapFloat(double *a, double *b) {
-  double temp = *a;
+void Swap(point *a, point *b) {
+  point temp = *a;
   *a = *b;
   *b = temp;
 }
@@ -42,30 +41,15 @@ void FillScreen(SDL_Renderer* renderer, int color[]) {
 }
 
 // interpolate line between two points
-std::vector<int> Interpolate(int i0, int d0, int i1, int d1) {
+std::vector<float> Interpolate(float i0, float d0, float i1, float d1) {
   if (i0 == i1) {
-    return (std::vector<int>){d0};
+    return (std::vector<float>){ d0 };
   }
-  std::vector<int> values;
-  float a = (float)(d1 - d0) / (float)(i1 - i0);
-  float d = (float)d0;
-  for (int i=i0; i<i1; ++i) {
-    values.push_back((int)d);
-    d = d + a;
-  }
-
-  return values;
-}
-
-// interpolate line between two points
-std::vector<double> InterpolateFloat(int i0, double d0, int i1, double d1) {
-  if (i0 == i1) {
-    return (std::vector<double>){d0};
-  }
-  std::vector<double> values;
-  double a = (double)(d1 - d0) / (double)(i1 - i0);
-  double d = (double)d0;
-  for (int i=i0; i<i1; ++i) {
+  std::vector<float> values;
+  float a = (d1 - d0) / (i1 - i0);
+  float d = d0;
+  //for (int i1; ++i) {
+  for (int i = (int)i0; i<(int)i1; i++) {
     values.push_back(d);
     d = d + a;
   }
@@ -73,100 +57,32 @@ std::vector<double> InterpolateFloat(int i0, double d0, int i1, double d1) {
   return values;
 }
 
+void DrawShadedTriangle(SDL_Renderer* renderer, point p0, point p1, point p2, int color[]) {
+  if (p1.y < p0.y) { Swap(&p1, &p0); }
+  if (p2.y < p0.y) { Swap(&p2, &p0); }
+  if (p2.y < p1.y) { Swap(&p2, &p1); }
+  // TODO: convert integer to float to pass to Interpolate()
+  std::vector<float> x01 = Interpolate((float)p0.y, (float)p0.x, (float)p1.y, (float)p1.x);
+  std::vector<float> h01 = Interpolate((float)p0.y, (float)p0.h, (float)p1.y, (float)p1.h);
 
-// Draws Line
-void DrawLine(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int color[]) {
-  if (abs(x1 - x0) > abs(y1 - y0)) {
-    if (x0 > x1) {
-      Swap(&x0, &x1);
-      Swap(&y0, &y1);
-    }
-    std::vector<int> ys = Interpolate(x0, y0, x1, y1);
-    for (int x=x0; x<x1; ++x) {
-      DrawPoint(renderer, (int)x, (int)ys[x - x0], color);
-    }
-  } else {
-		//std::cout << "Line x0: " << x0 << "y0: " << y0 << "x1: " << x1 << "y1: " << y1 << std::endl;
-    if (y0 > y1) {
-      Swap(&x0, &x1);
-      Swap(&y0, &y1);
-    }
-    std::vector<int> xs = Interpolate(y0, x0, y1, x1);
-    for (int y=y0; y<y1; ++y) {
-      DrawPoint(renderer, (int)xs[y - y0], (int)y, color);
-    }
-  }
-}
+  std::vector<float> x12 = Interpolate((float)p1.y, (float)p1.x, (float)p2.y, (float)p2.x);
+  std::vector<float> h12 = Interpolate((float)p1.y, (float)p1.h, (float)p2.y, (float)p2.h);
 
-// Draw wireframe triangle (untested lol)
-void DrawTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
-  DrawLine(renderer, x0, y0, x1, y1, color);
-  DrawLine(renderer, x1, y1, x2, y2, color);
-  DrawLine(renderer, x2, y2, x0, y0, color);
-}
-
-// Draw solid color triangle
-// TODO: figure out why this function hangs the program
-void FillTriangle(SDL_Renderer* renderer, int x0, int y0, int x1, int y1, int x2, int y2, int color[]) {
-
-  if (y1 < y0) { Swap(&x0, &x1); Swap(&y0, &y1); }
-  if (y2 < y0) { Swap(&x0, &x2); Swap(&y0, &y2); }
-  if (y2 < y1) { Swap(&x1, &x2); Swap(&y1, &y2); }
-
-  std::vector<int> x01 = Interpolate(y0, x0, y1, x1);
-  std::vector<int> x12 = Interpolate(y1, x1, y2, x2);
-  std::vector<int> x02 = Interpolate(y0, x0, y2, x2);
+  std::vector<float> x02 = Interpolate((float)p0.y, (float)p0.x, (float)p2.y, (float)p2.x);
+  std::vector<float> h02 = Interpolate((float)p0.y, (float)p0.h, (float)p2.y, (float)p2.h);
 
   x01.pop_back();
-  std::vector<int>& x012 = x01;
-  x012.insert(x012.end(), x12.begin(), x12.end());
-
-  std::vector<int> x_left;
-  std::vector<int> x_right;
-  int m = floor(x012.size() / 2);
-  if (x02[m] < x012[m]) {
-    x_left = x02;
-    x_right = x012;
-  } else {
-    x_left = x012;
-    x_right = x02;
-  }
-
-	for (int y=y0; y<y2; y++) {
-    for (int x=x_left[y - y0]; x<x_right[y - y0]; x++) {
-      DrawPoint(renderer, x, y, color);
-    }
-  }
-
-  std::cout << "finished" << std::endl;
-}
-
-void DrawShadedTriangle(SDL_Renderer* renderer, int x0, int y0, double h0, int x1, int y1, double h1, int x2, int y2, double h2, int color[]) {
-  if (y1 < y0) { Swap(&x0, &x1); Swap(&y0, &y1); SwapFloat(&h0, &h1); }
-  if (y2 < y0) { Swap(&x0, &x2); Swap(&y0, &y2); SwapFloat(&h0, &h2); }
-  if (y2 < y1) { Swap(&x1, &x2); Swap(&y1, &y2); SwapFloat(&h1, &h2); }
-
-  std::vector<int> x01 = Interpolate(y0, x0, y1, x1);
-  std::vector<double> h01 = InterpolateFloat(y0, h0, y1, h1);
-
-  std::vector<int> x12 = Interpolate(y1, x1, y2, x2);
-  std::vector<double> h12 = InterpolateFloat(y1, h1, y1, h2);
-
-  std::vector<int> x02 = Interpolate(y0, x0, y2, x2);
-  std::vector<double> h02 = InterpolateFloat(y0, h0, y2, h2);
-
-  x01.pop_back();
-  std::vector<int>& x012 = x01;
+  std::vector<float>& x012 = x01;
   x012.insert(x012.end(), x12.begin(), x12.end());
 
   h01.pop_back();
-  std::vector<double>& h012 = h01;
+  std::vector<float>& h012 = h01;
   h012.insert(h012.end(), h12.begin(), h12.end());
 
-  std::vector<int> x_left;
-  std::vector<int> x_right;
-  std::vector<double> h_left;
-  std::vector<double> h_right;
+  std::vector<float> x_left;
+  std::vector<float> x_right;
+  std::vector<float> h_left;
+  std::vector<float> h_right;
 
   int m = floor(x012.size() / 2);
   if (x02[m] < x012[m]) {
@@ -183,43 +99,52 @@ void DrawShadedTriangle(SDL_Renderer* renderer, int x0, int y0, double h0, int x
     h_right = h02;
   }
 
-  for (int y=y0; y<y2; y++) {
-    int x_l = x_left[y - y0];
-    int x_r = x_right[y - y0];
-    std::vector<double> h_segment = InterpolateFloat(x_l, h_left[y - y0], x_r, h_right[y - y0]);
+  std::vector<float> h_segment;
+  //int shaded_color[3];
 
-    for (int x = x_l; x<x_r; x++) {
-      //int shaded_color[3] = { (int)(color[0] * h_segment[x - x_l]), (int)(color[1] * h_segment[x - x_l]), (int)(color[2] * h_segment[x - x_l]) };
-      int shaded_color[3] = { (int)round((color[0] * h_segment[x - x_l])), (int)round((color[1] * h_segment[x - x_l])), (int)round((color[2] * h_segment[x - x_l])) };
+  float x_l;
+  float x_r;
+  for (int y = p0.y; y < p2.y; y++) {
+    x_l = x_left[y - p0.y];
+    x_r = x_right[y - p0.y];
+    h_segment = Interpolate(x_l, h_left[y - p0.y], x_r, h_right[y - p0.y]);
+    for (int x = (int)x_l; x < (int)x_r; x++) {
+      // TODO: make a utility function to abstract this, too many columns !!!
+      int shaded_color[3] = {(int)(color[0] * h_segment[x - x_l]), (int)(color[1] * h_segment[x - x_l]), (int)(color[2] * h_segment[x - x_l])};
       DrawPoint(renderer, x, y, shaded_color);
     }
   }
 }
-
 
 // Main program loop TODO: do framerate stuff 
 void ProgramLoop(SDL_Renderer* renderer) {
   int black[3] = {0, 0, 0};
   int white[3] = {255, 255, 255};
   int red[3] = {255, 0, 0};
+  int green[3] {0, 255, 0};
 
-  FillScreen(renderer, black);
+  // For now we draw before loop
+  FillScreen(renderer, white);
 
-  // This triangle, is broken, TODO: fix it maybe. 
-  //DrawTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
+  point p0;
+  p0.x = -200;
+  p0.y = -250;
+  p0.h = 0.3f;
+  
+  point p1;
+  p1.x = 200;
+  p1.y = 50;
+  p1.h = 0.1;
 
-  //FillTriangle(renderer, 0, 0, 100, -200, 300, 400, red);
-  //FillTriangle(renderer, -300, 300, -100, 300, -200, 200, red);
-  //FillTriangle(renderer, -300, -300, -100, -351, -200, -200, red);
-  //DrawShadedTriangle(renderer, 0, 0, 0.0, 100, -200, 0.5, 300, 400, 1.0, red);
+  point p2;
+  p2.x = 20;
+  p2.y = 250;
+  p2.h = 1.0;
 
   // Debug triangles
-  DrawShadedTriangle(renderer, -200, -250, 0.3, 200, 50, 0.1, 20, 250, 1.0, red);
+  DrawShadedTriangle(renderer, p0, p1, p2, green);
 
-  FillTriangle(renderer, -450, 450, -450, 203, -356, 400, red);
 
-  DrawTriangle(renderer, 300, -400, 400, -400, 350, -300, red);
-  
   SDL_RenderPresent(renderer);
 
   while (true) {

@@ -5,14 +5,15 @@ I will write a proper README when I have something that works, for now just know
 
 For now also this is just rasterization. I don't think my mac can handle the Raytracing stuff
 
-# BUGS
-
-Weird artifacts in FilledTriangles, source is either FillTriangle() function, or the Interpolate() function
-
-Shaded Triangles, straight up don't work proplerly, really weird shit going on, in the example,
-the bottom half of the triangle is shaded perfectly, but the top bit is all wack. 
-
-I am thinking maybe the bug is the result of some weird decimal bug(?), not completely sure, 
-I am fairly confident it's something to do with when we compute the h-values inside the loop, which might
-have something to do with the Interpolate function.
-
+# TODO
+- Rasterization (with shading)
+- Matrix multiplication
+- Projection & rotations etc.
+- Port to C (instead of weird c++ c hybrid)
+- Single file or split?
+- Struct or class to abstract SDL so we can swap it out for any drawing library
+- Clipping
+- Draw only visible triangles
+- load Blender files
+- Camera movement?
+- Teapot :)
