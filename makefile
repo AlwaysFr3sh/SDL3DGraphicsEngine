@@ -3,9 +3,13 @@
 # Directories
 S_DIR=src
 B_DIR=bin
+H_DIR=headers
 
 # Files
 S_FILES=$(S_DIR)/*
+
+# Headers
+H_FILES=$(H_DIR)/*
 
 # Output
 EXEC=$(B_DIR)/sdl_app
@@ -18,7 +22,8 @@ CC_SDL=-lSDL2 `sdl2-config --cflags --libs`
 all: Build
 
 Build:
-	$(CC) $(S_FILES) -o $(EXEC) $(CC_SDL)
+	#$(CC) $(S_FILES) -o $(EXEC) $(CC_SDL)
+	$(CC) $(S_FILES) $(CC_SDL) -o $(EXEC) 
 
 build_run:Build
 	$(EXEC)
