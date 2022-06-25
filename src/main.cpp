@@ -4,7 +4,6 @@
 #include "../headers/point.h"
 #include "../headers/rasterization.h"
 
-
 // Main program loop TODO: do framerate stuff 
 void ProgramLoop(SDL_Renderer* renderer) {
   int black[3] = {0, 0, 0};
