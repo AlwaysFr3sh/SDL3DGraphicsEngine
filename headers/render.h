@@ -3,6 +3,7 @@
 #include <vector>
 #include "point.h"
 #include "macros.h"
+#include "rasterization.h"
 
 point ViewportToCanvas(float x, float y);
 point project(vertex v);
