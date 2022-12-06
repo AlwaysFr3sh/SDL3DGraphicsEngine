@@ -21,14 +21,11 @@ My goal is to render the [Utah Teapot](https://en.wikipedia.org/wiki/Utah_teapot
 Not sure if or when I will get there, have not been working on this project too often. 
 
 # TODO
-- [x] Triangle Rasterization (with shading)
-- [ ] Matrix multiplication
-- [ ] Projection & rotations etc.
-- [ ] Port to C (instead of weird c++ c hybrid)
-- [ ] Single file or split?
-- [ ] Struct or class to abstract SDL so we can swap it out for any drawing library
+- [x] Rasterization
+- [x] Project, Transform and Translate
 - [ ] Clipping
-- [ ] Draw only visible triangles
-- [ ] load Blender files
-- [ ] Camera movement?
-- [ ] Teapot :)
+- [ ] Only Render visible surfaces
+- [ ] Shading
+- [ ] Load Blender Files
+- [ ] Better SDL abstraction (so we can swap it out for another libary and not have to pass around SDL_Renderer as much, preferably not at all)
+- [ ] Implement Proper Matrix multiplication library
