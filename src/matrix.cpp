@@ -1,4 +1,4 @@
-#include <stdio.h>
+/*#include <stdio.h>
 #include <iostream>
 #include <vector>
 
@@ -28,4 +28,4 @@ void Translate();
 
 int main(int argc, char* argv[]) {
   printf("Testing matrices and projection\n");
-}
+}*/

@@ -1,6 +1,11 @@
+// rasterization.cpp
+// TODO: rewrite in c (I want to learn c programming a little better)
 #include <vector>
 #include <SDL2/SDL.h>
 #include "../headers/point.h"
+
+// temp debug
+#include <iostream>
 
 void Swap(point *a, point *b) {
   point temp = *a;
@@ -51,11 +56,39 @@ std::vector<float> Interpolate(float i0, float d0, float i1, float d1) {
   return values;
 }
 
+void DrawLine(SDL_Renderer* renderer, point p0, point p1, int color[]) {
+   if (abs(p1.x - p0.x) > abs(p1.y - p0.y)) {
+    if (p0.x > p1.x) {
+      Swap(&p0, &p1);
+    }
+    std::vector<float> ys = Interpolate(p0.x, p0.y, p1.x, p1.y);
+    for (int x=p0.x; x<p1.x; ++x) {
+      DrawPoint(renderer, (int)x, (int)ys[x - p0.x], color);
+    }
+  } else {
+    if (p0.y > p1.y) {
+      Swap(&p0, &p1);
+    }
+    std::vector<float> xs = Interpolate(p0.y, p0.x, p1.y, p1.x);
+    for (int y=p0.y; y<p1.y; ++y) {
+      DrawPoint(renderer, (int)xs[y - p0.y], (int)y, color);
+    }
+  }
+}
+
+void DrawWireframeTriangle(SDL_Renderer* renderer, point p0, point p1, point p2, int color[]) {
+  std::cout << "drawing wireframe triangle" << std::endl;
+  std::cout << p0.x << p0.y << " " << p1.x << p1.y << " " << p2.x << p2.y << std::endl;
+  DrawLine(renderer, p0, p1, color);
+  DrawLine(renderer, p1, p2, color);
+  DrawLine(renderer, p0, p2, color);
+}
+
 void DrawShadedTriangle(SDL_Renderer* renderer, point p0, point p1, point p2, int color[]) {
   if (p1.y < p0.y) { Swap(&p1, &p0); }
   if (p2.y < p0.y) { Swap(&p2, &p0); }
   if (p2.y < p1.y) { Swap(&p2, &p1); }
-  // TODO: convert integer to float to pass to Interpolate()
+
   std::vector<float> x01 = Interpolate((float)p0.y, (float)p0.x, (float)p1.y, (float)p1.x);
   std::vector<float> h01 = Interpolate((float)p0.y, (float)p0.h, (float)p1.y, (float)p1.h);
 

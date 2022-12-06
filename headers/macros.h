@@ -1,0 +1,5 @@
+#define WIDTH 1000
+#define HEIGHT 1000
+
+#define PROJECTION_PLANE_Z 1
+#define VIEWPORT_SIZE 1
