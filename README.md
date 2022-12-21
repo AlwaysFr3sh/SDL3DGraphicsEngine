@@ -9,9 +9,12 @@ probably fix this eventually but it's a low priority.
 So far I've been following along sort of closely to Gabriel Gambetta's [book](https://gabrielgambetta.com/computer-graphics-from-scratch)  
 on creating computer graphics from scratch.
 
-For now though we only have triangles :)
+Currently we can render a wireframe of 3d objects:
 
-<img src="images/triangle.png" width="400" height="400">
+<img src="images/cube.png" width="400" height="400">
+
+The next step is Depth Buffering so we can render a filled in cube (with flat colored surfaces)
+
 
 I will update this image to demonstrate new progress as it comes.
 
