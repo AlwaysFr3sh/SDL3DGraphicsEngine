@@ -23,9 +23,10 @@ Not sure if or when I will get there, have not been working on this project too 
 # TODO
 - [x] Rasterization
 - [x] Project, Transform and Translate
-- [ ] Clipping
-- [ ] Only Render visible surfaces
+- [ ] Depth Buffering
+- [ ] Back Face Culling
 - [ ] Shading
 - [ ] Load Blender Files
 - [ ] Better SDL abstraction (so we can swap it out for another libary and not have to pass around SDL_Renderer as much, preferably not at all)
+- [ ] Clipping
 - [ ] Implement Proper Matrix multiplication library
