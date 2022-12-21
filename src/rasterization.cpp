@@ -4,9 +4,6 @@
 #include <SDL2/SDL.h>
 #include "../headers/point.h"
 
-// temp debug
-#include <iostream>
-
 void Swap(point *a, point *b) {
   point temp = *a;
   *a = *b;
@@ -77,8 +74,6 @@ void DrawLine(SDL_Renderer* renderer, point p0, point p1, int color[]) {
 }
 
 void DrawWireframeTriangle(SDL_Renderer* renderer, point p0, point p1, point p2, int color[]) {
-  std::cout << "drawing wireframe triangle" << std::endl;
-  std::cout << p0.x << p0.y << " " << p1.x << p1.y << " " << p2.x << p2.y << std::endl;
   DrawLine(renderer, p0, p1, color);
   DrawLine(renderer, p1, p2, color);
   DrawLine(renderer, p0, p2, color);

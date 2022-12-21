@@ -6,7 +6,7 @@
 #include "rasterization.h"
 
 point ViewportToCanvas(float x, float y);
-point project(vertex v);
+point Project(vertex v);
 projectedMesh ProjectMesh(mesh m);
 mesh Translate(mesh m, int x, int y, int z);
 // mesh transform()

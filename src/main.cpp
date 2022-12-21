@@ -2,126 +2,56 @@
 
 #include <iostream>
 #include <vector>
+#include <unordered_map>
+#include <algorithm>
 #include <cmath>
 #include <SDL2/SDL.h>
 #include "../headers/point.h"
 #include "../headers/rasterization.h"
 #include "../headers/render.h"
 
-// ---------
-// Clipping |
-// ---------
-/*
-struct plane {
-  vertex normal;
-  int distance;
-};
 
-vertex ApproximateBoundingSphereCenter(mesh m) {
-  vertex ret = {0, 0, 0};
-  for (vertex v : m.vertices) {
-    ret.x += v.x;
-    ret.y += v.y;
-    ret.z += v.z;
-  }
-  int size = m.vertices.size();
-  ret.x = ret.x / size;
-  ret.y = ret.y / size;
-  ret.z = ret.z / size;
-  return ret; 
-}
+void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius)
+{
+int black[3] = {0, 0, 0};
 
-float ApproximateBoundingSphereRadius(mesh m, vertex r) {
-  float ret = 0;
-  float distance;
-  for (vertex v : m.vertices) {
-    distance = abs(sqrt(pow(v.x - r.x, 2) + pow(v.y - r.y, 2) + pow(v.z - r.z, 2)));
-    if (distance > ret)
-      ret = distance;
-  }
-  // TODO: find out if return value should be absolute
-  return ret;
-}
+const int32_t diameter = (radius * 2);
 
-// TODO: figure out how to ignore mesh when completely outside clipping planes
-// Maybe No vertices counts as an ignore?
-mesh Clip(std::vector<plane> planes, mesh m) {
-  mesh ret;
-  for (plane p : planes) {
-    ret = ClipAgainstPlane(p, m);
-  } 
-  return ret;
-}
+int32_t x = (radius - 1);
+int32_t y = 0;
+int32_t tx = 1;
+int32_t ty = 1;
+int32_t error = (tx - diameter);
 
-mesh ClipAgainstPlane(plane p, mesh m) {
-  vertex meshCenter = ApproximateBoundingSphereCenter(m);
-  float d = SignedDistance(p, meshCenter);
-  float r = ApproximateBoundingSphereRadius(m, meshCenter);
+while (x >= y)
+{
+// Each of the following renders an octant of the circle
+DrawPoint(renderer, centreX + x, centreY - y, black);
+DrawPoint(renderer, centreX + x, centreY + y, black);
+DrawPoint(renderer, centreX - x, centreY - y, black);
+DrawPoint(renderer, centreX - x, centreY + y, black);
+DrawPoint(renderer, centreX + y, centreY - x, black);
+DrawPoint(renderer, centreX + y, centreY + x, black);
+DrawPoint(renderer, centreX - y, centreY - x, black);
+DrawPoint(renderer, centreX - y, centreY + x, black);
 
-  if (d > r) {
-    return m;
-  } else if (d < -r) {
-    //return NULL;
-    mesh ignored;
-    std::cout << ignored.vertices.size() <<  std::endl; // Confirm that this prints zero and doesn't crash
-    return ignored;
-  } else {
-    // apparently according to stackoverflow this is a copy after complation
-    mesh clipped = m; 
-    clipped.triangles = ClipTriangles(m.triangles, m.vertices, p);
-    return clipped;
-  }
-}
-
-// TODO: do I pass mesh as a whole? or two lists separately?
-std::vector<triangle> ClipTriangles(std::vector<triangle> triangles, std::vector<vertex> vertices, plane p) {
-  std::vector<triangle> clipped = {};
-  for (triangle t : triangles){
-    triangle clipped_t = ClipTriangle(t, vertices, p);
-    if (clipped_t.points[0] != NULL)
-      clipped.push_back(clipped_t);
-  }
-  return clipped;
-}
-
-void SegmentPlaneIntersection(float distance, plane p) {
-
-}
-
-// TODO: make a helper function file and stick this in it
-#include <stdlib.h>
-
-int cmpfunc (const void * a, const void * b) {
-   return ( *(int*)a - *(int*)b );
-}
-
-triangle ClipTriangle(triangle t, std::vector<vertex> vertices, plane p) {
-
-  float d[3] = {SignedDistance(p, vertices[t.points[0]]), 
-                SignedDistance(p, vertices[t.points[1]]), 
-                SignedDistance(p, vertices[t.points[2]])};
-
-  qsort(d, 3, sizeof(float), cmpfunc);
-
-  // TODO: checking every value is pointless when they are sorted (if 0 is positive, all are etc)
-  if (d[0] > 0 && d[1] > 0 && d[2] > 0) {
-    return t;
-  } else if (d[0] < 0 && d[1] < 0 && d[2] < 0) {
-    triangle clipped = {NULL};
-    return clipped;
-  } else if (d[0] < 0 && d[1] < 0 && d[2] > 0) {
-    
-  } else {
-
+  if (error <= 0)
+  {
+  	++y;
+  	error += ty;
+  	ty += 2;
   }
 
-  
+  if (error > 0)
+  {
+  	--x;
+  	tx += 2;
+  	error += (tx - diameter);
+  }
+}
 }
 
-float SignedDistance(plane p, vertex v) {
-  return (v.x * p.normal.x) + (v.y * p.normal.y) + (v.z + p.normal.z) + p.distance;
-}
-*/
+// TODO: abstract all the dot products to a function
 
 // Main program loop TODO: do framerate stuff 
 // TODO: do loop xD
@@ -162,7 +92,18 @@ void Program(SDL_Renderer* renderer) {
   };
 
   // translation
-  cube = Translate(cube, 10, 4, 50);
+  cube = Translate(cube, -5, 0, 10);
+
+  // ripped of the js implementation of this stuff
+  float s2 = (float)std::sqrt(2);
+
+  std::vector<plane> planes = {
+    plane({0, 0, 1}, -1),
+    plane({s2, 0, s2}, 0),
+    plane({-s2, 0, s2}, 0),
+    plane({0, -s2, s2}, 0),
+    plane({0, s2, s2}, 0)
+  };
 
   // Projection
   projectedMesh projectedCube = ProjectMesh(cube);
