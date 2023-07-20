@@ -5,57 +5,133 @@
 #include <unordered_map>
 #include <algorithm>
 #include <cmath>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "../headers/point.h"
 #include "../headers/rasterization.h"
 #include "../headers/render.h"
 
+/*
+TODO:
 
-void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius)
-{
-int black[3] = {0, 0, 0};
+- Fix weird edge-depth bug that causes the behind color to sometimes bleed through
+  - It's possible that this is because there are gaps in the triangles, to test this, try removing 
+    the behind triangles manually and see if there is any 'white' that bleeds through.
+  - If I am right about the triangle gaps, I'm not sure how to proceed. Instead of looping to the end of the smaller of
+    x_left and x_right, I'll have to somehow find a way to ensure that the two are always the same length possibly?? 
+    - To do this past me suggests the following:
+      - Check the lengths of x01, x12 and x20 I expect them to not always be the same length
+      - If my previous hypothesis is correct, the problem may be due to the int cast that happens in the Interpolate() function
+      - Find out why (int)i1 does not always return the same result. 
+      - If Interpolate() is not the problem, the problem is likely to have something to do with how we are stitching x01 and x12 together. 
 
-const int32_t diameter = (radius * 2);
+- Refactor Triangle() function (remove duplicate code as much as possible)
+- Put Triangle() function back inside the rasterization file (replace existing triangle function)
+- Lighting 
+- File Reading
+- Back face culling
+- Rotation
+*/
 
-int32_t x = (radius - 1);
-int32_t y = 0;
-int32_t tx = 1;
-int32_t ty = 1;
-int32_t error = (tx - diameter);
+void Triangle(SDL_Renderer* renderer, std::vector<std::vector<float>>& depthBuffer, point p[], vertex v[], int color[]) {
+  
+  if (p[1].y < p[0].y) { Swap(&p[1], &p[0]), std::swap(v[1], v[0]); }
+  if (p[2].y < p[0].y) { Swap(&p[2], &p[0]), std::swap(v[2], v[0]); }
+  if (p[2].y < p[1].y) { Swap(&p[2], &p[1]), std::swap(v[2], v[1]); }
+ 
+  std::vector<float> x01 = Interpolate((float)p[0].y, (float)p[0].x, (float)p[1].y, (float)p[1].x);
+  std::vector<float> z01 = Interpolate((float)p[0].y, 1.0 / (float)v[0].z, (float)p[1].y, 1.0 / (float)v[1].z);
 
-while (x >= y)
-{
-// Each of the following renders an octant of the circle
-DrawPoint(renderer, centreX + x, centreY - y, black);
-DrawPoint(renderer, centreX + x, centreY + y, black);
-DrawPoint(renderer, centreX - x, centreY - y, black);
-DrawPoint(renderer, centreX - x, centreY + y, black);
-DrawPoint(renderer, centreX + y, centreY - x, black);
-DrawPoint(renderer, centreX + y, centreY + x, black);
-DrawPoint(renderer, centreX - y, centreY - x, black);
-DrawPoint(renderer, centreX - y, centreY + x, black);
+  std::vector<float> x12 = Interpolate((float)p[1].y, (float)p[1].x, (float)p[2].y, (float)p[2].x);
+  std::vector<float> z12 = Interpolate((float)p[1].y, 1.0 / (float)v[1].z, (float)p[2].y, 1.0 / (float)v[2].z);
 
-  if (error <= 0)
-  {
-  	++y;
-  	error += ty;
-  	ty += 2;
+  std::vector<float> x02 = Interpolate((float)p[0].y, (float)p[0].x, (float)p[2].y, (float)p[2].x);
+  std::vector<float> z02 = Interpolate((float)p[0].y, 1.0 / (float)v[0].z, (float)p[2].y, 1.0 / (float)v[2].z);
+
+  x01.pop_back();
+  std::vector<float>& x012 = x01;
+  x012.insert(x012.end(), x12.begin(), x12.end());
+
+  z01.pop_back();
+  std::vector<float>& z012 = z01;
+  z012.insert(z012.end(), z12.begin(), z12.end());
+
+  std::vector<float> x_left;
+  std::vector<float> x_right;
+  std::vector<float> z_left;
+  std::vector<float> z_right;
+
+  int m = floor(x012.size() / 2);
+  if (x02[m] < x012[m]) {
+    x_left = x02;
+    z_left = z02;
+
+    x_right = x012;
+    z_right = z012;
+  } else {
+    x_left = x012;
+    z_left = z012;
+
+    x_right = x02;
+    z_right = z02;
   }
 
-  if (error > 0)
-  {
-  	--x;
-  	tx += 2;
-  	error += (tx - diameter);
+  std::vector<float> z_segment;
+  float x_l;
+  float x_r;
+  float z;
+
+  int penis = std::min(x_left.size(), x_right.size());
+
+  for (int y = p[0].y; y < (penis + p[0].y); y++) {
+    x_l = x_left[y - p[0].y];
+    x_r = x_right[y - p[0].y];
+
+    z_segment = Interpolate(x_l, z_left[y - p[0].y], x_r, z_right[y - p[0].y]);
+
+    for (int x = (int)x_l; x < (int)x_r; x++) {
+
+      z = z_segment[(int)(x - x_l)];
+      int adjusted_x = (WIDTH/2) + (x | 0);
+      int adjusted_y = (HEIGHT/2) - (y | 0) - 1;
+
+      if (z > depthBuffer[adjusted_x][adjusted_y]) {
+        DrawPoint(renderer, x, y, color);
+        depthBuffer[adjusted_x][adjusted_y] = z;
+      } 
+    }
   }
 }
+
+void DrawMesh(SDL_Renderer* renderer, projectedMesh m, int color[]) {
+
+  std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, 0.0f));
+  point points[3];
+  vertex vertices[3];
+
+  // color stuff, temporary to verify some stuff
+  int colors[6][3] = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}, {255, 255, 0}, {0, 255, 255}, {255, 0, 255}};
+  int color_index = 0;
+  int index = 0;
+
+  for ( triangle t : m.triangles ) {
+
+    points[0] = m.points[t.points[0]], points[1] = m.points[t.points[1]], points[2] = m.points[t.points[2]];
+    vertices[0] = m.vertices[t.points[0]], vertices[1] = m.vertices[t.points[1]], vertices[2] = m.vertices[t.points[2]];
+    Triangle(renderer, depthBuffer, points, vertices, colors[color_index]);
+
+    // Temporary color funk
+    index++; 
+    if (index % 2 == 0 && index != 0) {
+      color_index++;
+    }
+    if (color_index > 5) {
+      color_index = 0;
+    }
+    
+  }
 }
 
-// TODO: abstract all the dot products to a function
-
-// Main program loop TODO: do framerate stuff 
-// TODO: do loop xD
-void Program(SDL_Renderer* renderer) {
+void Rasterizer(SDL_Renderer* renderer) {
   int black[3] = {0, 0, 0};
   int white[3] = {255, 255, 255};
   int red[3] = {255, 0, 0};
@@ -84,7 +160,7 @@ void Program(SDL_Renderer* renderer) {
     {5, 4, 7}, 
     {5, 7, 6},
     {1, 5, 6},
-    {1, 6, 2},
+    {1, 6, 2}, // debug this one
     {4, 5, 1},
     {4, 1, 0},
     {2, 6, 7},
@@ -92,36 +168,16 @@ void Program(SDL_Renderer* renderer) {
   };
 
   // translation
-  cube = Translate(cube, -5, 0, 10);
-
-  // ripped of the js implementation of this stuff
-  float s2 = (float)std::sqrt(2);
-
-  std::vector<plane> planes = {
-    plane({0, 0, 1}, -1),
-    plane({s2, 0, s2}, 0),
-    plane({-s2, 0, s2}, 0),
-    plane({0, -s2, s2}, 0),
-    plane({0, s2, s2}, 0)
-  };
+  cube = Translate(cube, 2, -2, 10);
 
   // Projection
   projectedMesh projectedCube = ProjectMesh(cube);
 
   // Draw
-  DebugDrawMesh(renderer, projectedCube, black);
+  DrawMesh(renderer, projectedCube, black);
+  //DebugDrawMesh(renderer, projectedCube, black);
 
   SDL_RenderPresent(renderer);
-
-  while (true) {
-    SDL_Event event;
-    if (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        // break program loop
-        break;
-      }
-    }
-  }
 }
 
 // Creates SDL Window context (???)
@@ -159,7 +215,18 @@ int main(int argc, char* argv[]) {
   }
   // The window is open: could enter program loop here (see SDL_PollEvent())
   // We are entering Program Loop here hehe :)
-  Program(renderer); 
+  Rasterizer(renderer); 
+
+  while (true) {
+    SDL_Event event;
+    if (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        // break program loop
+        break;
+      }
+    }
+  }
+
   // Destroy Renderer
   SDL_DestroyRenderer(renderer);
   // Close and destroy the window

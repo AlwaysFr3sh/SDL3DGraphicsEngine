@@ -1,7 +1,6 @@
 // rasterization.cpp
-// TODO: rewrite in c (I want to learn c programming a little better)
 #include <vector>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "../headers/point.h"
 
 void Swap(point *a, point *b) {

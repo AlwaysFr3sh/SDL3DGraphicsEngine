@@ -27,8 +27,10 @@ struct mesh {
 
 // My terminology is really dumb
 // is it confusing that we have points and vertices? (I think it is)
+// TODO: we could probably use this instead of mesh all of the time to keep things simple
 struct projectedMesh {
   std::vector<triangle> triangles;
+  std::vector<vertex> vertices;
   std::vector<point> points;
 };
 

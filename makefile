@@ -18,6 +18,8 @@ EXEC=$(B_DIR)/sdl_app
 CC=g++ -std=c++11
 # SDL options
 CC_SDL=-lSDL2 `sdl2-config --cflags --libs`
+# doesn't work on new mac so I have do do it this way instead
+#CC_SDL= -lSDL2 -I/usr/local/include -L/usr/local/lib
 
 all: Build
 

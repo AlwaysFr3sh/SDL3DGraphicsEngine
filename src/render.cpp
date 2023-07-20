@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <vector>
 #include "../headers/point.h"
 #include "../headers/macros.h"
@@ -18,6 +18,7 @@ point Project(vertex v) {
 
 projectedMesh ProjectMesh(mesh m) {
   projectedMesh ret;
+  ret.vertices = m.vertices; // This is probably fine right??? I suck at cpp lol
   for (int i = 0; i < m.vertices.size(); i++) {
     ret.points.push_back(Project(m.vertices[i]));
   }
