@@ -78,61 +78,105 @@ void DrawWireframeTriangle(SDL_Renderer* renderer, point p0, point p1, point p2,
   DrawLine(renderer, p0, p2, color);
 }
 
-void DrawShadedTriangle(SDL_Renderer* renderer, point p0, point p1, point p2, int color[]) {
-  if (p1.y < p0.y) { Swap(&p1, &p0); }
-  if (p2.y < p0.y) { Swap(&p2, &p0); }
-  if (p2.y < p1.y) { Swap(&p2, &p1); }
+void Triangle(SDL_Renderer* renderer, std::vector<std::vector<float>>& depthBuffer, point p[], vertex v[], int color[]) {
+  
+  if (p[1].y < p[0].y) { Swap(&p[1], &p[0]), std::swap(v[1], v[0]); }
+  if (p[2].y < p[0].y) { Swap(&p[2], &p[0]), std::swap(v[2], v[0]); }
+  if (p[2].y < p[1].y) { Swap(&p[2], &p[1]), std::swap(v[2], v[1]); }
+ 
+  std::vector<float> x01 = Interpolate((float)p[0].y, (float)p[0].x, (float)p[1].y, (float)p[1].x);
+  std::vector<float> z01 = Interpolate((float)p[0].y, 1.0 / (float)v[0].z, (float)p[1].y, 1.0 / (float)v[1].z);
 
-  std::vector<float> x01 = Interpolate((float)p0.y, (float)p0.x, (float)p1.y, (float)p1.x);
-  std::vector<float> h01 = Interpolate((float)p0.y, (float)p0.h, (float)p1.y, (float)p1.h);
+  std::vector<float> x12 = Interpolate((float)p[1].y, (float)p[1].x, (float)p[2].y, (float)p[2].x);
+  std::vector<float> z12 = Interpolate((float)p[1].y, 1.0 / (float)v[1].z, (float)p[2].y, 1.0 / (float)v[2].z);
 
-  std::vector<float> x12 = Interpolate((float)p1.y, (float)p1.x, (float)p2.y, (float)p2.x);
-  std::vector<float> h12 = Interpolate((float)p1.y, (float)p1.h, (float)p2.y, (float)p2.h);
+  std::vector<float> x02 = Interpolate((float)p[0].y, (float)p[0].x, (float)p[2].y, (float)p[2].x);
+  std::vector<float> z02 = Interpolate((float)p[0].y, 1.0 / (float)v[0].z, (float)p[2].y, 1.0 / (float)v[2].z);
 
-  std::vector<float> x02 = Interpolate((float)p0.y, (float)p0.x, (float)p2.y, (float)p2.x);
-  std::vector<float> h02 = Interpolate((float)p0.y, (float)p0.h, (float)p2.y, (float)p2.h);
 
   x01.pop_back();
   std::vector<float>& x012 = x01;
   x012.insert(x012.end(), x12.begin(), x12.end());
 
-  h01.pop_back();
-  std::vector<float>& h012 = h01;
-  h012.insert(h012.end(), h12.begin(), h12.end());
+  z01.pop_back();
+  std::vector<float>& z012 = z01;
+  z012.insert(z012.end(), z12.begin(), z12.end());
 
   std::vector<float> x_left;
   std::vector<float> x_right;
-  std::vector<float> h_left;
-  std::vector<float> h_right;
+  std::vector<float> z_left;
+  std::vector<float> z_right;
 
   int m = floor(x012.size() / 2);
   if (x02[m] < x012[m]) {
     x_left = x02;
-    h_left = h02;
+    z_left = z02;
 
     x_right = x012;
-    h_right = h012;
+    z_right = z012;
   } else {
     x_left = x012;
-    h_left = h012;
+    z_left = z012;
 
     x_right = x02;
-    h_right = h02;
+    z_right = z02;
   }
 
-  std::vector<float> h_segment;
-  //int shaded_color[3];
+  //std::cout << "x01: " << x01.size() << " x12: " << x12.size() << " x02: " << x02.size() << std::endl;
+  //std::cout << "x_left: " << x_left.size() << " x_right: " << x_right.size() << std::endl;
 
+  std::vector<float> z_segment;
   float x_l;
   float x_r;
-  for (int y = p0.y; y < p2.y; y++) {
-    x_l = x_left[y - p0.y];
-    x_r = x_right[y - p0.y];
-    h_segment = Interpolate(x_l, h_left[y - p0.y], x_r, h_right[y - p0.y]);
+  float z;
+
+  // TODO: I feel like this shouldn't be necessary
+  int min_length = std::min(x_left.size(), x_right.size());
+
+  for (int y = p[0].y; y < (min_length + p[0].y); y++) {
+    x_l = x_left[y - p[0].y];
+    x_r = x_right[y - p[0].y];
+
+    z_segment = Interpolate(x_l, z_left[y - p[0].y], x_r, z_right[y - p[0].y]);
+
     for (int x = (int)x_l; x < (int)x_r; x++) {
-      // TODO: make a utility function to abstract this, too many columns !!!
-      int shaded_color[3] = {(int)(color[0] * h_segment[x - x_l]), (int)(color[1] * h_segment[x - x_l]), (int)(color[2] * h_segment[x - x_l])};
-      DrawPoint(renderer, x, y, shaded_color);
+
+      z = z_segment[(int)(x - x_l)];
+      int adjusted_x = (WIDTH/2) + (x | 0);
+      int adjusted_y = (HEIGHT/2) - (y | 0) - 1;
+
+      if (z > depthBuffer[adjusted_x][adjusted_y]) {
+        DrawPoint(renderer, x, y, color);
+        depthBuffer[adjusted_x][adjusted_y] = z;
+      } 
+    }
+  }
+}
+
+void DrawMesh(SDL_Renderer* renderer, projectedMesh m, int color[]) {
+
+  std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, 0.0f));
+  point points[3];
+  vertex vertices[3];
+
+  // color stuff, temporary to verify some stuff
+  int colors[6][3] = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}, {255, 255, 0}, {0, 255, 255}, {255, 0, 255}};
+  int color_index = 0;
+  int index = 0;
+
+  for ( triangle t : m.triangles ) {
+
+    points[0] = m.points[t.points[0]], points[1] = m.points[t.points[1]], points[2] = m.points[t.points[2]];
+    vertices[0] = m.vertices[t.points[0]], vertices[1] = m.vertices[t.points[1]], vertices[2] = m.vertices[t.points[2]];
+    Triangle(renderer, depthBuffer, points, vertices, colors[color_index]);
+
+    // Temporary color funk
+    index++; 
+    if (index % 2 == 0 && index != 0) {
+      color_index++;
+    }
+    if (color_index > 5) {
+      color_index = 0;
     }
   }
 }
