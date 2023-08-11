@@ -26,10 +26,11 @@ Not sure if or when I will get there, have not been working on this project too 
 # TODO
 - [x] Rasterization
 - [x] Project, Transform and Translate
-- [ ] Depth Buffering
-- [ ] Back Face Culling
+- [x] Depth Buffering
 - [ ] Shading
 - [ ] Load Blender Files
-- [ ] Better SDL abstraction (so we can swap it out for another libary and not have to pass around SDL_Renderer as much, preferably not at all)
+- [ ] Refactor out any library specific stuff from the core logic (SDL)
+
+# Maybe
 - [ ] Clipping
-- [ ] Implement Proper Matrix multiplication library
+- [ ] Back face culling
